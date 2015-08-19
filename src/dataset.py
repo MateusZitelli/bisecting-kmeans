@@ -4,6 +4,7 @@ from .exceptions import NoPoints, WrongDimensionality
 
 
 class Dataset():
+    """ Data set representation with automatic data normalization. """
     def __init__(self, data=[], normalized=False):
         def normalizeValue(ceil, floor, value):
             return (value - floor) / (ceil - floor)
@@ -58,6 +59,13 @@ class Dataset():
         return "<Dataset points:%s>" % (self.data)
 
     def append(self, point):
+        """
+        Adds a point to the dataset if the dimensionality of the point
+        mathces the dataset dimensionality, in case of unset dimensionality it
+        will be defined based on the length of the point vector. Raise an
+        WrongDimensionality error in case of incompatible data
+        """
+
         if self.dimensions != len(point):
             if self.dimensions is not None:
                 raise WrongDimensionality
@@ -69,6 +77,11 @@ class Dataset():
         return Dataset(data=self.data, normalized=True)
 
     def median(self):
+        """
+        Return the median of the data set, if there is no data points a NoPoints
+        error will be raised.
+        """
+
         if self.dimensions is None:
             raise NoPoints("There is no data points for median acquisition.")
 
