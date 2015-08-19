@@ -1,6 +1,6 @@
 from itertools import islice
 from functools import partial
-from .exceptions import NoPoints, WrongDimensionality
+from exceptions import NoPoints, WrongDimensionality
 
 
 class Dataset():

@@ -1,6 +1,6 @@
 import random
-from .exceptions import NoPoints, WrongDimensionality
-from .dataset import Dataset
+from exceptions import NoPoints, WrongDimensionality
+from dataset import Dataset
 
 
 class Mean():
@@ -52,7 +52,7 @@ class KmeansSolution():
         self.solve()
 
     def __repr__(self):
-        return str(self.means)
+        return "<Solution means:\n%s>" % (str(self.means))
 
     def solve(self):
         for r in range(self.maxRounds):
