@@ -1,6 +1,7 @@
 import random
 from exceptions import NoPoints, WrongDimensionality
 from dataset import Dataset
+from math import log
 
 
 class Mean():
@@ -33,11 +34,16 @@ class Mean():
             self.id, str(self.position), self.coveredDataset.__repr__())
 
     def distanceSqrd(self, point):
-        def dist(v1, v2):
+        def distSqrd(v1, v2):
             return sum([(j - v2[i]) ** 2 for i, j in enumerate(v1)])
         if len(point) != len(self.position):
             raise WrongDimensionality()
-        return dist(point, self.position)
+        return distSqrd(point, self.position)
+
+    def totalSquaredError(self):
+        squaredDists = [self.distanceSqrd(point) for point in self.coveredDataset]
+        return sum(squaredDists)
+
 
 
 class KmeansSolution():
@@ -49,10 +55,13 @@ class KmeansSolution():
         self.dataset = dataset
         self.maxRounds = maxRounds
         self.means = [Mean(i, dataset.dimensions) for i in range(k)]
+        self.meanSquaredError = None
         self.solve()
 
     def __repr__(self):
-        return "<Solution means:\n%s>" % (str(self.means))
+        meansString = "\n  ".join([str(mean) for mean in self.means])
+        return "<Solution mean squared error: %f means:\n  %s>" % (
+            self.meanSquaredError, meansString)
 
     def solve(self):
         for r in range(self.maxRounds):
@@ -70,7 +79,13 @@ class KmeansSolution():
                 mean.clear()
 
             if not hasChanges:
-                return
+                break
+        self.setMeanSquaredError()
+
+    def setMeanSquaredError(self):
+        totalSquaredError = sum([mean.totalSquaredError() for mean in self.means])
+        self.meanSquaredError = totalSquaredError / len(self.dataset)
+
 
 
 class Kmeans():
@@ -94,6 +109,7 @@ class Kmeans():
     def run(self):
         self.solutions = [KmeansSolution(self.dataset, self.k, self.maxRounds)
                           for t in range(self.trials)]
+        self.solutions.sort(key=lambda s: s.meanSquaredError)
 
     def showResults(self):
         for solution in self.solutions:
