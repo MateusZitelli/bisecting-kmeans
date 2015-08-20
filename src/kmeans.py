@@ -1,7 +1,6 @@
 import random
 from exceptions import NoPoints, WrongDimensionality
 from dataset import Dataset
-from math import log
 
 
 class Mean():
@@ -14,6 +13,9 @@ class Mean():
         self.position = [random.random() for i in range(dimensions)]
         self.coveredDataset = None
         self.nextDataset = Dataset(normalized=True, data=[])
+        self.dirt = False
+        self.meanSquaredError = None
+        self.totalSquaredError = None
 
     def update(self):
         if self.coveredDataset == self.nextDataset:
@@ -28,6 +30,7 @@ class Mean():
 
     def cover(self, point):
         self.nextDataset.append(point)
+        self.dirt = True
 
     def __repr__(self):
         return "<Mean id: %i position:%s dataset:%s>" % (
@@ -40,10 +43,16 @@ class Mean():
             raise WrongDimensionality()
         return distSqrd(point, self.position)
 
-    def totalSquaredError(self):
-        squaredDists = [self.distanceSqrd(point) for point in self.coveredDataset]
-        return sum(squaredDists)
+    def getMeanSquaredError(self):
+        if self.dirt or self.meanSquaredError is None:
+            self.meanSquaredError = self.getTotalSquaredError() / len(self.coveredDataset)
+        return self.meanSquaredError
 
+    def getTotalSquaredError(self):
+        if self.dirt or self.meanSquaredError is None:
+            squaredDists = [self.distanceSqrd(point) for point in self.coveredDataset]
+            self.totalSquaredError = sum(squaredDists)
+        return self.totalSquaredError
 
 
 class KmeansSolution():
@@ -73,7 +82,8 @@ class KmeansSolution():
 
             for mean in self.means:
                 try:
-                    hasChanges = hasChanges or mean.update()
+                    updated = mean.update()
+                    hasChanges = hasChanges or updated
                 except NoPoints:
                     pass
                 mean.clear()
@@ -82,10 +92,13 @@ class KmeansSolution():
                 break
         self.setMeanSquaredError()
 
-    def setMeanSquaredError(self):
-        totalSquaredError = sum([mean.totalSquaredError() for mean in self.means])
-        self.meanSquaredError = totalSquaredError / len(self.dataset)
+    def getWorstCluster(self):
+        return max(self.means, key=lambda mean: mean.getTotalSquaredError())
 
+
+    def setMeanSquaredError(self):
+        totalSquaredError = sum([mean.getTotalSquaredError() for mean in self.means])
+        self.meanSquaredError = totalSquaredError / len(self.dataset)
 
 
 class Kmeans():
@@ -110,6 +123,9 @@ class Kmeans():
         self.solutions = [KmeansSolution(self.dataset, self.k, self.maxRounds)
                           for t in range(self.trials)]
         self.solutions.sort(key=lambda s: s.meanSquaredError)
+
+    def getBestSolution(self):
+        return self.solutions[0]
 
     def showResults(self):
         for solution in self.solutions:
