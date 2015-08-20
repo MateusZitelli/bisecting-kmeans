@@ -1,6 +1,6 @@
 import random
-from exceptions import NoPoints, WrongDimensionality
-from dataset import Dataset
+from kmeans.exceptions import NoPoints, WrongDimensionality
+from kmeans.dataset import Dataset
 
 
 class Mean():

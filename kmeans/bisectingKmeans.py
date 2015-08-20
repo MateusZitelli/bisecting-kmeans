@@ -1,5 +1,5 @@
-from kmeans import Kmeans, Mean
-from dataset import Dataset
+from kmeans.kmeans import Kmeans, Mean
+from kmeans.dataset import Dataset
 
 
 class BisectingKmeans():
@@ -41,7 +41,7 @@ class BisectingKmeans():
                 self.means.remove(worstCluster)
 
     def showResults(self):
-        print(self.means)
+        print('\n\n'.join([str(mean) for mean in self.means]))
 
 if __name__ == "__main__":
     ds = Dataset(data=[[0, 0], [1, 1], [0.9, 0.9], [0.5, 0.5]])
