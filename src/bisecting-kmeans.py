@@ -33,7 +33,7 @@ class BisectingKmeans():
 
             self.means += bisectionSolution.means
 
-            worstCluster = bisectionSolution.getWorstCluster()
+            worstCluster = bisectionSolution.getWorstMean()
 
             # if the number of means is not enouth remove the worst cluster
             # found to bisect it in the next iteration.

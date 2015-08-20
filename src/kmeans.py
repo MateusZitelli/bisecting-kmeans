@@ -45,12 +45,14 @@ class Mean():
 
     def getMeanSquaredError(self):
         if self.dirt or self.meanSquaredError is None:
-            self.meanSquaredError = self.getTotalSquaredError() / len(self.coveredDataset)
+            self.meanSquaredError = self.getTotalSquaredError() /\
+                len(self.coveredDataset)
         return self.meanSquaredError
 
     def getTotalSquaredError(self):
         if self.dirt or self.meanSquaredError is None:
-            squaredDists = [self.distanceSqrd(point) for point in self.coveredDataset]
+            squaredDists = [self.distanceSqrd(point)
+                            for point in self.coveredDataset]
             self.totalSquaredError = sum(squaredDists)
         return self.totalSquaredError
 
@@ -92,12 +94,12 @@ class KmeansSolution():
                 break
         self.setMeanSquaredError()
 
-    def getWorstCluster(self):
+    def getWorstMean(self):
         return max(self.means, key=lambda mean: mean.getTotalSquaredError())
 
-
     def setMeanSquaredError(self):
-        totalSquaredError = sum([mean.getTotalSquaredError() for mean in self.means])
+        totalSquaredError = sum([mean.getTotalSquaredError()
+                                 for mean in self.means])
         self.meanSquaredError = totalSquaredError / len(self.dataset)
 
 
