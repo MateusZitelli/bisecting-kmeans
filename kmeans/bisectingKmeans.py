@@ -39,7 +39,7 @@ class BisectingKmeans():
 
             self.means += bisectionSolution.means
 
-            worstCluster = bisectionSolution.getWorstMean()
+            worstCluster = max(self.means, key=lambda m: m.getMeanSquaredError())
 
             # if the number of means is not enouth remove the worst cluster
             # found to bisect it in the next iteration.

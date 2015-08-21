@@ -1,5 +1,4 @@
 from itertools import islice
-from functools import partial
 from kmeans.exceptions import NoPoints, WrongDimensionality
 
 
@@ -10,12 +9,12 @@ class Dataset():
             return (value - floor) / (ceil - floor)
 
         def normalize(data):
-            minimum = min(map(min, data))
-            maximum = max(map(max, data))
-            self.dataCeil = maximum
-            self.dataFloor = minimum
-            normalizer = partial(normalizeValue, maximum, minimum)
-            return [list(map(normalizer, v)) for v in data]
+            zipped = list(zip(*data))
+            minimuns = list(map(min, zipped))
+            maximuns = list(map(max, zipped))
+            return [[normalizeValue(maximuns[i], minimuns[i], d)
+                     for i, d in enumerate(v)]
+                    for v in data]
 
         self.data = normalize(data) if not normalized else data
 

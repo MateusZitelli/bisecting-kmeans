@@ -10,7 +10,10 @@ class Mean():
     def __init__(self, id, dimensions):
         self.id = id
         self.dimensions = dimensions
-        self.position = [random.random() for i in range(dimensions)]
+        if self.dimensions is None:
+            self.position = []
+        else:
+            self.position = [random.random() for i in range(dimensions)]
         self.coveredDataset = None
         self.nextDataset = Dataset(normalized=True, data=[])
         self.dirt = False
@@ -44,9 +47,12 @@ class Mean():
         return distSqrd(point, self.position)
 
     def getMeanSquaredError(self):
+        if len(self.coveredDataset) == 0:
+            return float('inf')
         if self.dirt or self.meanSquaredError is None:
             self.meanSquaredError = self.getTotalSquaredError() /\
                 len(self.coveredDataset)
+            self.dirt = False
         return self.meanSquaredError
 
     def getTotalSquaredError(self):
@@ -54,6 +60,7 @@ class Mean():
             squaredDists = [self.distanceSqrd(point)
                             for point in self.coveredDataset]
             self.totalSquaredError = sum(squaredDists)
+            self.dirt = False
         return self.totalSquaredError
 
 
@@ -98,6 +105,9 @@ class KmeansSolution():
         return max(self.means, key=lambda mean: mean.getTotalSquaredError())
 
     def setMeanSquaredError(self):
+        if len(self.dataset) == 0:
+            self.meanSquaredError = float('inf')
+            return
         totalSquaredError = sum([mean.getTotalSquaredError()
                                  for mean in self.means])
         self.meanSquaredError = totalSquaredError / len(self.dataset)
