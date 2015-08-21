@@ -16,6 +16,12 @@ class BisectingKmeans():
         self.trials = trials
         self.maxRounds = maxRounds
         self.means = []
+        self.meanSquaredError = None
+
+    def setMeanSquaredError(self):
+        totalSquaredError = sum([mean.getTotalSquaredError()
+                                 for mean in self.means])
+        self.meanSquaredError = totalSquaredError / len(self.dataset)
 
     def run(self):
         worstCluster = self.dataset
@@ -39,6 +45,7 @@ class BisectingKmeans():
             # found to bisect it in the next iteration.
             if len(self.means) < self.k:
                 self.means.remove(worstCluster)
+        self.setMeanSquaredError()
 
     def showResults(self):
         print('\n\n'.join([str(mean) for mean in self.means]))
