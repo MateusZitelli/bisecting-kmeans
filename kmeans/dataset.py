@@ -6,16 +6,21 @@ class Dataset():
     """ Data set representation with automatic data normalization. """
     def __init__(self, data=[], normalized=False):
         def normalizeValue(ceil, floor, value):
-            return (value - floor) / (ceil - floor)
+            offset = (ceil - floor)
+            if offset == 0:
+                return value - floor
+            return (value - floor) / offset
 
         def normalize(data):
             zipped = list(zip(*data))
-            minimuns = list(map(min, zipped))
-            maximuns = list(map(max, zipped))
-            return [[normalizeValue(maximuns[i], minimuns[i], d)
+            self.minimuns = list(map(min, zipped))
+            self.maximuns = list(map(max, zipped))
+            return [[normalizeValue(self.maximuns[i], self.minimuns[i], d)
                      for i, d in enumerate(v)]
                     for v in data]
 
+        self.minimuns = None
+        self.maximuns = None
         self.data = normalize(data) if not normalized else data
 
         if(len(self.data) > 0):
@@ -51,11 +56,22 @@ class Dataset():
         elif isinstance(key, slice):
             return islice(self.data, key.start, key.stop, key.step)
         else:
-            raise KeyError("Key must be non-negative integer or slice, not {}"
-                           .format(key))
+            raise KeyError("Key must be non-negative integer or slice, not {}".format(key))
 
     def __repr__(self):
         return "<Dataset points:%s>" % (self.data)
+
+    def genUnnormalized(self, limits):
+        maximuns, minimuns = limits
+
+        def unnormalizeValue(ceil, floor, value):
+            return value * (ceil - floor) + floor
+
+        unnormalizedData =  [[
+            unnormalizeValue(maximuns[i], minimuns[i], d)
+            for i, d in enumerate(v)]
+            for v in self.data]
+        return unnormalizedData
 
     def append(self, point):
         """
@@ -73,7 +89,10 @@ class Dataset():
         self.data.append(point)
 
     def copy(self):
-        return Dataset(data=self.data, normalized=True)
+        ds = Dataset(data=self.data, normalized=True)
+        if self.maximuns is not None and self.minimuns is not None:
+            ds.setLimits(self.maximuns, self.minimuns)
+        return ds
 
     def median(self):
         """
@@ -85,3 +104,10 @@ class Dataset():
             raise NoPoints("There is no data points for median acquisition.")
 
         return [sum(dimension)/len(self.data) for dimension in zip(*self.data)]
+
+    def setLimits(self, maximuns, minimuns):
+        """
+        Define maximuns and minimuns
+        """
+        self.minimuns = minimuns
+        self.maximuns = maximuns

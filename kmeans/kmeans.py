@@ -7,9 +7,10 @@ class Mean():
     """
     A mean of the k-means.
     """
-    def __init__(self, id, dimensions):
+    def __init__(self, id, dimensions, key=lambda x: x):
         self.id = id
         self.dimensions = dimensions
+        self.key = key
         if self.dimensions is None:
             self.position = []
         else:
@@ -42,11 +43,9 @@ class Mean():
     def distanceSqrd(self, point):
         def distSqrd(v1, v2):
             return sum([(j - v2[i]) ** 2 for i, j in enumerate(v1)])
-        if len(point) != len(self.position):
-            raise WrongDimensionality()
-        return distSqrd(point, self.position)
+        return distSqrd(self.key(point), self.position)
 
-    def getMeanSquaredError(self):
+    def getMeanSquaredError(self, key=lambda x: x):
         if len(self.coveredDataset) == 0:
             return float('inf')
         if self.dirt or self.meanSquaredError is None:
@@ -55,7 +54,7 @@ class Mean():
             self.dirt = False
         return self.meanSquaredError
 
-    def getTotalSquaredError(self):
+    def getTotalSquaredError(self, key=lambda x: x):
         if self.dirt or self.meanSquaredError is None:
             squaredDists = [self.distanceSqrd(point)
                             for point in self.coveredDataset]
@@ -63,16 +62,24 @@ class Mean():
             self.dirt = False
         return self.totalSquaredError
 
+    def getCoveredDataset(self, limits=None, normalized=True):
+        if normalized:
+            return self.coveredDataset.genUnnormalized(limits)
+        else:
+            return self.coveredDataset
+
 
 class KmeansSolution():
     """
     Represents a k-means execution.
     """
-    def __init__(self, dataset, k, maxRounds):
+    def __init__(self, dataset, k, maxRounds, key=lambda x: x):
         self.k = k
         self.dataset = dataset
         self.maxRounds = maxRounds
-        self.means = [Mean(i, dataset.dimensions) for i in range(k)]
+        self.key = key
+        self.dimension = dataset.dimensions
+        self.means = [Mean(i, self.dimension, key=key) for i in range(k)]
         self.meanSquaredError = None
         self.solve()
 
@@ -119,7 +126,7 @@ class Kmeans():
     different random initial conditions.
     """
 
-    def __init__(self, dataset, k, trials, maxRounds):
+    def __init__(self, dataset, k, trials, maxRounds, key=lambda x: x):
         """
         dataset - The aim dataset
         k - The number of means
@@ -130,9 +137,10 @@ class Kmeans():
         self.k = k
         self.trials = trials
         self.maxRounds = maxRounds
+        self.key = key
 
     def run(self):
-        self.solutions = [KmeansSolution(self.dataset, self.k, self.maxRounds)
+        self.solutions = [KmeansSolution(self.dataset, self.k, self.maxRounds, key=self.key)
                           for t in range(self.trials)]
         self.solutions.sort(key=lambda s: s.meanSquaredError)
 

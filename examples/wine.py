@@ -20,12 +20,11 @@ wineFields = [
 ]
 
 loader = DataLoader('wine.data', wineFields)
-print(loader.data)
 ds = Dataset(data=loader.data)
 # kf = KneeFinder(dataset=ds, krange=[1, 10], trials=100, maxRounds=100)
 # kf.run()
 # kf.show()
-bisection = BisectingKmeans(dataset=ds, k=4, trials=99, maxRounds=100)
+bisection = BisectingKmeans(dataset=ds, k=4, trials=99, maxRounds=100, key=lambda x: x[:2])
 bisection.run()
 visualizer = MeansVisualizer(bisection.means, wineFields)
 visualizer.show()

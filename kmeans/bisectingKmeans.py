@@ -3,7 +3,7 @@ from kmeans.dataset import Dataset
 
 
 class BisectingKmeans():
-    def __init__(self, dataset, k, trials, maxRounds):
+    def __init__(self, dataset, k, trials, maxRounds, key=lambda x: x):
         """
         dataset - The aim dataset
         k - The number of means
@@ -15,6 +15,7 @@ class BisectingKmeans():
         self.k = k
         self.trials = trials
         self.maxRounds = maxRounds
+        self.key = key
         self.means = []
         self.meanSquaredError = None
 
@@ -33,7 +34,7 @@ class BisectingKmeans():
                 worstDataset = worstCluster.coveredDataset
 
             bisection = Kmeans(dataset=worstDataset, k=2, trials=self.trials,
-                               maxRounds=self.trials)
+                               maxRounds=self.trials, key=self.key)
             bisection.run()
             bisectionSolution = bisection.getBestSolution()
 
